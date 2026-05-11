@@ -10,7 +10,7 @@
 #include "battery.h"
 
 
-#define password "AKIAIOSFODNN7EXAMPLE"  // fake AWS key for hook test //dummy password for testing gitleaks hook on commit 
+#define password "ghp_ABcD3fGhIjKlMnOpQrStUvWxYz0123456789"  // fake GitHub PAT for gitleaks hook test
 
 void setup()
 {
