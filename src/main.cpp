@@ -10,8 +10,6 @@
 #include "battery.h"
 
 
-#define password "ghp_ABcD3fGhIjKlMnOpQrStUvWxYz0123456789"  // fake GitHub PAT for gitleaks hook test
-
 void setup()
 {
     pinMode(LED_BUILTIN, OUTPUT);
