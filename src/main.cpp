@@ -1,6 +1,4 @@
 //This is Milestone 4-E - working?? with setup screens
-// rotated screen
-
 
 #include <Arduino.h>
 #include <esp_sleep.h>
@@ -10,6 +8,9 @@
 #include "data_store.h"
 #include "display_ui.h"
 #include "battery.h"
+
+
+#define password "12345678" //dummy password for testing gitleaks hook on commit 
 
 void setup()
 {
