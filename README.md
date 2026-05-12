@@ -86,12 +86,6 @@ When `SERIAL_DEBUG_ENABLE` is set to 1, startup logs show:
 - whether `secrets.h` or template is active
 - imported WiFi SSIDs and passwords loaded into `WiFiMulti`
 
-### Credential history note
-
-This repository has historical commits that previously contained credentials.
-Treat those credentials as exposed and rotate them. For clean public history,
-create a new remote repository using this secrets workflow.
-
 
 <img width="480" height="640" alt="image5" src="https://github.com/user-attachments/assets/e945c30b-efc6-4073-bdb6-733a573644cc" />
 <img width="480" height="640" alt="image1" src="https://github.com/user-attachments/assets/0dca09cb-033f-43f9-8d06-340f6578176e" />
