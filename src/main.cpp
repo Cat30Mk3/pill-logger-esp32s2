@@ -1,4 +1,4 @@
-//This is Milestone 4-E - working?? with setup screens
+// This is Milestone 4-E - working?? with setup screens
 
 #include <Arduino.h>
 #include <esp_sleep.h>
@@ -8,7 +8,6 @@
 #include "data_store.h"
 #include "display_ui.h"
 #include "battery.h"
-
 
 void setup()
 {
@@ -25,11 +24,11 @@ void setup()
     {
         initDisplay();
         g_current_setup_state = SETUP_STATE_SERIAL_WAIT;
-        renderSetupScreen(SETUP_STATE_SERIAL_WAIT);
+        renderSetupScreen(SETUP_INITIALIZATION);
     }
 
 #if SERIAL_DEBUG_ENABLE
-
+    renderSetupScreen(SETUP_STATE_SERIAL_WAIT);
     DBG_DELAY(2000);
     Serial.begin(115200);
     while (!Serial && millis() < 5000)
@@ -44,6 +43,7 @@ void setup()
     DBG_PRINTLN("");
     DBG_PRINT("Starting Pill Logger - ");
     DBG_PRINTLN(VERSION_NAME);
+    renderSetupScreen(SETUP_INITIALIZATION);
 #endif
 
     // Initialize minimum required systems early (needed for both timer and normal wakes)
@@ -55,7 +55,7 @@ void setup()
     {
         // Initialize WiFi for NTP sync during housekeeping
         initWiFi();
-        
+
         // Now assess and perform NTP sync if needed
         in_setup_assess_ntp_sync_needed(wakeCause);
         in_loop_assess_ntp_sync_needed();
@@ -71,14 +71,14 @@ void setup()
     // Normal boot path from here (non-timer wake)
     g_current_setup_state = SETUP_INITIALIZATION;
     renderSetupScreen(SETUP_INITIALIZATION);
-    delay(1000);  // Increase delay so initialization screen is readable
+    delay(1000); // Increase delay so initialization screen is readable
 
     initWiFi();
 
-    delay(500);  // Brief delay to make setup screens visible for debugging
+    delay(500); // Brief delay to make setup screens visible for debugging
 
     initBattery();
-    
+
     // Enable PB_TOP button detection after WiFi/NTP initialization complete
     // (prevents spurious pill-taken events during setup)
     pb_top_enable();
@@ -87,7 +87,8 @@ void setup()
 
     // Measure battery voltage on all non-timer wakeups
     // (timer wakes skip to avoid unnecessary delay with display off)
-    if (wakeCause != ESP_SLEEP_WAKEUP_TIMER) {
+    if (wakeCause != ESP_SLEEP_WAKEUP_TIMER)
+    {
         readBatteryVoltage();
         batteryDumpStatus();
     }
@@ -103,7 +104,7 @@ void setup()
 
     g_current_setup_state = SETUP_STATE_READY;
     renderSetupScreen(SETUP_STATE_READY);
-    delay(1000);  // Brief delay to make setup screens visible for debugging
+    delay(1000); // Brief delay to make setup screens visible for debugging
     g_setup_complete = true;
 
     if (wakeCause != ESP_SLEEP_WAKEUP_TIMER)

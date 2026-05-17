@@ -103,9 +103,12 @@ enum SetupState {
 };
 
 // === Serial debug macros ===
-#define SERIAL_DEBUG_ENABLE 1// Set to 1 to enable Serial prints and debug delays
+// // Set to 1 to enable Serial prints and debug delays
+#ifndef SERIAL_DEBUG_ENABLE
+  #define SERIAL_DEBUG_ENABLE 0
+#endif
 
-#if SERIAL_DEBUG_ENABLE
+#if defined(SERIAL_DEBUG_ENABLE) && (SERIAL_DEBUG_ENABLE)
   #define DBG_PRINT(x)    Serial.print(x)
   #define DBG_PRINTLN(x) Serial.println(x)
   #define DBG_PRINTF(...) Serial.printf(__VA_ARGS__)  //example of variadic macro for printf    
