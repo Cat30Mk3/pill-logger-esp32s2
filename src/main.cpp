@@ -115,7 +115,17 @@ void setup()
 
     if (wakeCause != ESP_SLEEP_WAKEUP_TIMER)
     {
-        setScreenIndex(0);
+        // Low battery alert: if SOC is at or below 20% and not on USB power,
+        // start on the battery status screen (screen 4) so the user sees
+        // the low-battery warning immediately on wake/boot.
+        if (!isUsbPowered() && getBatterySoc() <= 20)
+        {
+            setScreenIndex(4);
+        }
+        else
+        {
+            setScreenIndex(0);
+        }
         u8g2.setPowerSave(0);
     }
 
