@@ -19,7 +19,7 @@ static_assert(wifi_credentials_count > 0, "At least one WiFi credential is requi
 #define VERSION_NAME "Milestone 4-F"
 
 // ===================== NTP/Time Sync Parameters =====================
-#define NTP_REFRESH_INTERVAL_SECONDS         7 * 24 * 60 * 60  // once per week
+#define NTP_REFRESH_INTERVAL_SECONDS         1 * 24 * 60 * 60  // once per day (RC oscillator drift makes weekly interval too long)
 #define NTP_RETRY_BACKOFF_INTERVAL_SECONDS   3600 //once per hour
 #define NTP_RETRY_COUNT_MAX                 5  // number of retries before backoff issociated with each retry attempt, reset on successful sync
 #define TIMEZONE_RULE "EST5EDT,M3.2.0/2,M11.1.0/2" // Eastern Time with DST
@@ -35,7 +35,7 @@ static_assert(wifi_credentials_count > 0, "At least one WiFi credential is requi
 
 // Timing definitions (shared)
 #define INACTIVITY_TIMEOUT_MS 60000 // 60 seconds inactivity timeout
-#define DEEP_SLEEP_WAKE_TIMER_SECONDS 60 // timer wake interval
+#define DEEP_SLEEP_WAKE_TIMER_SECONDS 300 // 5-minute timer wake interval (midnight detection latency <= 5 min)
 #define DEBOUNCE_TIME_MS 20
 #define NAV_DEBOUNCE_MS 60       // Debounce window for nav buttons (PB_LEFT/RIGHT/SELECT)
 #define NAV_RELEASE_DEBOUNCE_MS 20 // Stable release-high time before nav button re-arms

@@ -144,7 +144,9 @@ boolean ntp_sync_attempt()
 {
     // WiFi/NTP sync - runs in background task with watchdog disabled
     DBG_PRINTLN("[NTP] ntp_sync_attempt() begins");
-    rtc_fast_state.last_ntp_sync_timestamp = getUtcTime();
+    // NOTE: last_ntp_sync_timestamp is only set AFTER a successful sync (below).
+    // Setting it here before the attempt would incorrectly suppress the next sync
+    // for a full interval even when this attempt fails.
     rtc_fast_state.ntp_backoff_active = false;
     DBG_PRINTLN("[NTP] Connecting to strongest WiFi in list");
     

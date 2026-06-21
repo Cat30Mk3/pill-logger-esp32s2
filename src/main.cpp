@@ -53,16 +53,22 @@ void setup()
     // Timer wake runs housekeeping only, keeps display off, and returns to sleep.
     if (wakeCause == ESP_SLEEP_WAKEUP_TIMER)
     {
-        // Initialize WiFi for NTP sync during housekeeping
-        initWiFi();
-
-        // Now assess and perform NTP sync if needed
+        // Assess NTP sync need BEFORE touching WiFi hardware
         in_setup_assess_ntp_sync_needed(wakeCause);
+
+        // Only power up WiFi if NTP sync is actually needed (saves power on most wakes)
+        if (!rtc_fast_state.live_clock_synced)
+        {
+            initWiFi();
+        }
+
+        // Attempt NTP sync if needed (WiFi initialized above only when required)
         in_loop_assess_ntp_sync_needed();
+
+        // isNewLocalDay() calls savePersistentData() internally if day changed - no extra save needed
         isNewLocalDay();
 
 #if DEEP_SLEEP_ENABLE
-        persistence_save();
         rtc_save();
         enterDeepSleep();
 #endif
