@@ -384,7 +384,48 @@ static uint8_t pills_edit_100 = 0;
 static uint8_t pills_edit_10 = 0;
 static uint8_t pills_edit_1 = 0;
 
+// ============ NTP SYNC STATUS RENDERER ============
+static void renderNtpSyncStatus(const char *line1, const char *line2)
+{
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_6x10_tf);
+    drawCentered("Manual NTP Sync", 10, u8g2_font_6x10_tf);
+    drawCentered(line1, 20, u8g2_font_6x10_tf);
+    drawCentered(line2, 30, u8g2_font_5x8_tr);
+    u8g2.drawFrame(0, 0, 128, 32);
+    u8g2.sendBuffer();
+}
+
+// Forward declarations for MUI callbacks
 static uint8_t muif_exit_edit_now(mui_t *ui, uint8_t msg);
+static uint8_t muif_ntp_sync_action(mui_t *ui, uint8_t msg);
+
+// ============ NTP MANUAL SYNC MUI (triggered from screen 5, PB_RIGHT) ============
+static muif_t ntp_muif_list[] = {
+    MUIF_U8G2_FONT_STYLE(0, u8g2_font_5x8_tr),
+    MUIF_U8G2_LABEL(),
+    MUIF_RO("GP", mui_u8g2_goto_data),
+    MUIF_BUTTON("GC", mui_u8g2_goto_form_w1_pi),
+    MUIF_RO("X0", muif_exit_edit_now),   // Exit: leave NTP menu
+    MUIF_RO("NS", muif_ntp_sync_action), // Sync Now: trigger manual NTP sync
+};
+
+static fds_t ntp_fds_data[] =
+    MUI_FORM(1)
+        MUI_STYLE(0)
+            MUI_LABEL(2, 8, "NTP Options")
+                MUI_DATA("GP",
+                         MUI_90 "Exit|" MUI_2 "Sync Now")
+                    MUI_XYA("GC", 2, 20, 0)
+                        MUI_XYA("GC", 2, 30, 1)
+
+                            MUI_FORM(2)
+                                MUI_STYLE(0)
+                                    MUI_XY("NS", 0, 0)
+
+                                        MUI_FORM(90)
+                                            MUI_STYLE(0)
+                                                MUI_XY("X0", 0, 0);
 
 static muif_t edit_muif_list[] = {
     MUIF_U8G2_FONT_STYLE(0, u8g2_font_5x8_tr),
@@ -708,6 +749,51 @@ static uint8_t muif_exit_edit_now(mui_t *ui, uint8_t msg)
     return 0;
 }
 
+static uint8_t muif_ntp_sync_action(mui_t *ui, uint8_t msg)
+{
+    if (msg == MUIF_MSG_FORM_START)
+    {
+        mui_LeaveForm(ui);
+        lastActivityTime = millis(); // Suppress inactivity timeout during sync
+
+        // Phase 1: WiFi connect
+        renderNtpSyncStatus("Connecting", "WiFi...");
+        initWiFi(); // Ensure wifiMulti has AP credentials loaded
+        bool wifiOk = wifi_connect_for_ntp();
+        if (!wifiOk)
+        {
+            renderNtpSyncStatus("WiFi", "Connect Failed");
+            rtc_fast_state.last_ntp_sync_reason = 4; // 4 = manual sync from UI
+            rtc_save();
+            delay(2000);
+            lastActivityTime = millis();
+            exitEditMode();
+            return 1;
+        }
+
+        // Phase 2: NTP sync
+        renderNtpSyncStatus("NTP Sync", "In Progress...");
+        bool ntpOk = ntp_sync_only();
+        rtc_fast_state.last_ntp_sync_reason = 4; // 4 = manual sync from UI
+        rtc_save();
+
+        if (ntpOk)
+        {
+            renderNtpSyncStatus("NTP Sync", "Success!");
+        }
+        else
+        {
+            renderNtpSyncStatus("NTP Sync", "Failed!");
+        }
+
+        delay(2000);
+        lastActivityTime = millis();
+        exitEditMode();
+        return 1;
+    }
+    return 0;
+}
+
 void enterEditMode(EditState state)
 {
     g_edit_state = state;
@@ -727,6 +813,12 @@ void enterEditMode(EditState state)
         loadPillsEditStagingFromPersistent();
         g_mui.begin(u8g2, edit_fds_data, edit_muif_list, sizeof(edit_muif_list) / sizeof(muif_t));
         g_mui.gotoForm(30, 0); // initial focus on Exit in the menu list
+        g_mui_ready = true;
+    }
+    else if (state == EDIT_NTP_MENU)
+    {
+        g_mui.begin(u8g2, ntp_fds_data, ntp_muif_list, sizeof(ntp_muif_list) / sizeof(muif_t));
+        g_mui.gotoForm(1, 0); // initial focus on Exit (first item)
         g_mui_ready = true;
     }
     else
@@ -780,6 +872,11 @@ void checkMuiEntry()
         if (screen == 3)
         {
             enterEditMode(EDIT_PILLS_MENU);
+            return;
+        }
+        if (screen == 5)
+        {
+            enterEditMode(EDIT_NTP_MENU);
             return;
         }
     }

@@ -91,3 +91,7 @@ void printLocalTimestampTime(const char* TimeStampName, time_t timestamp);
 // --- Midnight Reset ---
 bool isNewLocalDay();
 void setToMidnightForTesting();
+
+// --- Manual Sync Helpers (used by display_ui manual NTP sync) ---
+bool wifi_connect_for_ntp();  // WiFi connection phase only
+bool ntp_sync_only();         // NTP time sync phase only (assumes WiFi already connected)

@@ -227,6 +227,79 @@ boolean ntp_sync_attempt()
     return true;
 }
 
+// ============ MANUAL SYNC HELPERS ============
+// These split the WiFi-connect and NTP-time phases so display_ui can show
+// per-phase feedback during a user-triggered manual sync from the NTP menu.
+
+bool wifi_connect_for_ntp()
+{
+    DBG_PRINTLN("[NTP] wifi_connect_for_ntp() begins");
+    for (int attempt = 0; attempt < 3; attempt++)
+    {
+        int result = wifiMulti.run(5000);
+        if (result == WL_CONNECTED)
+        {
+            DBG_PRINT("[NTP] WiFi connected: ");
+            DBG_PRINTLN(WiFi.SSID());
+            strcpy(rtc_fast_state.last_wifi_ssid, WiFi.SSID().c_str());
+            rtc_fast_state.last_wifi_rssi = WiFi.RSSI();
+            rtc_fast_state.last_ntp_failure_cause = NTP_OK;
+            return true;
+        }
+        DBG_PRINTF("[NTP] wifi_connect_for_ntp attempt %d failed\n", attempt + 1);
+        WiFi.disconnect(false);
+        delay(1000);
+    }
+    DBG_PRINTLN("[NTP] wifi_connect_for_ntp: all attempts failed");
+    rtc_fast_state.last_ntp_failure_cause = NTP_WIFI_FAIL;
+    rtc_fast_state.ntp_retry_count = 0;
+    WiFi.disconnect();
+    return false;
+}
+
+bool ntp_sync_only()
+{
+    DBG_PRINTLN("[NTP] ntp_sync_only() begins");
+    configTime(0, 0, "pool.ntp.org");
+
+    uint32_t ntp_start = millis();
+    struct tm timeinfo;
+    bool time_obtained = false;
+
+    while ((millis() - ntp_start) < 10000)
+    {
+        if (getLocalTime(&timeinfo, 1000))
+        {
+            time_obtained = true;
+            break;
+        }
+        delay(500);
+    }
+
+    if (time_obtained)
+    {
+        DBG_PRINTLN("[NTP] ntp_sync_only: success");
+        printUTCTime();
+        printLocalTime();
+        rtc_fast_state.last_ntp_sync_timestamp = getUtcTime();
+        rtc_fast_state.last_unix = getUtcTime();
+        rtc_fast_state.last_tick = (uint32_t)esp_timer_get_time() / 1000;
+        rtc_fast_state.last_ntp_failure_cause = NTP_OK;
+        rtc_fast_state.ntp_retry_count = 0;
+        rtc_fast_state.ntp_backoff_count = 0;
+        rtc_fast_state.live_clock_synced = true;
+        WiFi.disconnect();
+        return true;
+    }
+    else
+    {
+        DBG_PRINTLN("[NTP] ntp_sync_only: failed (timeout)");
+        rtc_fast_state.last_ntp_failure_cause = NTP_TIMEOUT;
+        WiFi.disconnect();
+        return false;
+    }
+}
+
 // ============ NTP SYNC ============
 void syncTimeIfNeeded(bool force)
 {

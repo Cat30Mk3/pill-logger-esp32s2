@@ -155,6 +155,7 @@ typedef enum : uint8_t {
     EDIT_RX_PPD     = 4,  // Rx pills/day editor
     EDIT_PILLS_MENU = 5,  // Pills Remaining Edit Menu (entry from primary screen 3)
     EDIT_PILLS_REM  = 6,  // Pills Remaining editor
+    EDIT_NTP_MENU   = 7,  // NTP Options Menu (entry from primary screen 5, PB_RIGHT)
 } EditState;
 
 extern EditState g_edit_state;
