@@ -8,6 +8,7 @@
 #include "data_store.h"
 #include "display_ui.h"
 #include "battery.h"
+#include <SPI.h>
 
 void setup()
 {

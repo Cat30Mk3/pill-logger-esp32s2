@@ -16,7 +16,8 @@ static_assert(wifi_credentials_count > 0, "At least one WiFi credential is requi
 
 
 // ==== Version Name ----
-#define VERSION_NAME "Milestone 4-F"
+//#define VERSION_NAME "Milestone 4-F"
+// moved to platfoirmio.ini to avoid rebuilds on version change
 
 // ===================== NTP/Time Sync Parameters =====================
 #define NTP_REFRESH_INTERVAL_SECONDS         1 * 24 * 60 * 60  // once per day (RC oscillator drift makes weekly interval too long)
@@ -91,7 +92,7 @@ static_assert(wifi_credentials_count > 0, "At least one WiFi credential is requi
 #define VBAT_ERROR_DISPLAY 9.99f    // Voltage displayed on error
 
 // === LED Control Macro ===
-#define LED_ENABLE 0 // Set to 1 to enable LED output; default OFF (rely on OLED for status)
+#define LED_ENABLE 1 // Set to 1 to enable LED output; default OFF (rely on OLED for status)
 
 // === Setup State Enum ===
 enum SetupState {
