@@ -23,12 +23,12 @@ irregularily. Two objectives:
 
 3. Providing a robust and reliable system that  meets objectives 1 and 2 
 - acheived by:
-        - utilizing deep sleep to extend the battery life
-        - ensuring battery removal and power cycling will not loose critical data.
-        - maintaining accurate real time clock synchornizing periodiocally with NTP server
-        - providing confirmation of successful NTP synchronization
-        - providing battery monitoring to enable timely battery changes
-
+  - utilizing deep sleep to extend the battery life
+  - ensuring battery removal and power cycling will not loose critical data.
+  - providing confirmation of successful NTP synchronization
+  - providing battery monitoring to enable timely battery changes
+  - battery backed up, high accuracy DS3231 real time clock
+  - maintaining accurate real time clock synchornizing periodiocally with NTP server
 
 Project Use cases:
 1. when a pill is taken: long press pushbutton - confirmation 
@@ -88,6 +88,7 @@ When `SERIAL_DEBUG_ENABLE` is set to 1, startup logs show:
 
 
 <img width="480" height="640" alt="image5" src="https://github.com/user-attachments/assets/e945c30b-efc6-4073-bdb6-733a573644cc" />
+<img width="332" height="640" alt="IMG_0237_rot" src="https://github.com/user-attachments/assets/ba435b17-6a63-4abc-b6c1-58a590c8a97d" />
 <img width="480" height="640" alt="image1" src="https://github.com/user-attachments/assets/0dca09cb-033f-43f9-8d06-340f6578176e" />
 <img width="480" height="640" alt="image2" src="https://github.com/user-attachments/assets/01123a2e-db13-4e1b-8a91-66e263ec7f33" />
 <img width="480" height="640" alt="image3" src="https://github.com/user-attachments/assets/50be9aca-6439-40df-a739-13edbb70360d" />
