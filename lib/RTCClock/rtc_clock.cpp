@@ -54,21 +54,19 @@ void rtc_clock_begin()
 
     if (_rtc.lostPower())
     {
-        // Oscillator stopped — coin-cell battery is dead or was removed.
-        // The stored time is invalid. The device cannot provide a reliable
-        // clock until the battery is replaced and time is re-set via NTP.
-        DBG_PRINTLN("[RTC] *** WARNING: DS3231 lostPower() — coin cell dead or replaced ***");
+        // OSF set — oscillator was stopped at some point (VCC loss or dead coin cell).
+        // DS3231 coin-cell time is loaded anyway so NTP interval check fires correctly.
+        DBG_PRINTLN("[RTC] *** WARNING: DS3231 lostPower() — OSF set, NTP sync required ***");
         _rtc_ok = false;
 
-        // Display permanent alert and hard stop.
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenB08_tr);
-        u8g2.drawStr(14, 14, "DS3231 DEAD");
-        u8g2.drawStr(8,  28, "Change Battery");
+        u8g2.drawStr(10, 14, "RTC:Needs Sync");
+        u8g2.drawStr(10, 28, "Connect WiFi");
         u8g2.sendBuffer();
 
-        DBG_PRINTLN("[RTC] Hard stop — system halted");
-        while (true) { delay(1000); }
+        rtc_clock_sync_system_from_rtc();
+        return;
     }
 
     // DS3231 is present and running with a valid coin-cell backup.
@@ -102,7 +100,8 @@ void rtc_clock_sync_rtc_from_system()
     // Write current ESP32 system clock (UTC) back to the DS3231.
     // Called only after a successful NTP sync to correct DS3231 drift.
     time_t t = (time_t)getUtcTime();
-    _rtc.adjust(DateTime((uint32_t)t));
+    _rtc.adjust(DateTime((uint32_t)t)); // adjust() clears the OSF bit as a side effect
+    _rtc_ok = true;
 
     // Read back for confirmation log.
     DateTime confirm = _rtc.now();

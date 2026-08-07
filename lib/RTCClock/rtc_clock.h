@@ -22,9 +22,9 @@
 //
 // MUST be called after initDisplay() — Wire.begin(33,35) must run first.
 //
-// If the DS3231 oscillator has stopped (coin-cell battery dead),
-// this function displays "DS3231 DEAD" / "Change Battery" on the
-// OLED and enters an infinite loop. It never returns in that case.
+// If the DS3231 OSF flag is set (VCC loss or dead coin cell), displays
+// "RTC:Needs Sync" on the OLED, loads DS3231 time anyway, and returns
+// with rtc_clock_is_ok() == false. NTP sync will clear the OSF via adjust().
 void rtc_clock_begin();
 
 // --- DS3231 → ESP32 system clock ---
