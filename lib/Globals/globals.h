@@ -106,7 +106,7 @@ enum SetupState {
 // === Serial debug macros ===
 // // Set to 1 to enable Serial prints and debug delays
 
-#define SERIAL_DEBUG_ENABLE 0
+#define SERIAL_DEBUG_ENABLE 1
 
 #if (SERIAL_DEBUG_ENABLE)
   #define DBG_PRINT(x)    Serial.print(x)

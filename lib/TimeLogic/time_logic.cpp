@@ -9,7 +9,23 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <esp_sleep.h>
+#include <esp_sntp.h>
 WiFiMulti wifiMulti;
+
+static const char *sntpStatusToString(sntp_sync_status_t status)
+{
+    switch (status)
+    {
+    case SNTP_SYNC_STATUS_RESET:
+        return "RESET";
+    case SNTP_SYNC_STATUS_COMPLETED:
+        return "COMPLETED";
+    case SNTP_SYNC_STATUS_IN_PROGRESS:
+        return "IN_PROGRESS";
+    default:
+        return "UNKNOWN";
+    }
+}
 
 void setSystemTimeBad() {
     time_t bad_time = time(NULL) - 1000000;  // Set time 11+ days in past
@@ -176,14 +192,26 @@ boolean ntp_sync_attempt()
     DBG_PRINTLN("[NTP] Starting NTP sync with configTime()");
     configTime(0, 0, "pool.ntp.org");
     
-    // Wait for NTP with timeout
+    // Wait for SNTP to actually complete, not just for the RTC-seeded system clock
+    // to remain readable. configTime() is asynchronous on ESP32.
     uint32_t ntp_start = millis();
     struct tm timeinfo;
     bool time_obtained = false;
+    DBG_PRINTLN("[NTP] Waiting up to 10 seconds for NTP time to become available");
+    sntp_sync_status_t last_sntp_status = SNTP_SYNC_STATUS_RESET;
     
     while ((millis() - ntp_start) < 10000)  // 10 second timeout
     {
-        if (getLocalTime(&timeinfo, 1000))  // 1 second timeout per probe
+        sntp_sync_status_t current_sntp_status = sntp_get_sync_status();
+        if (current_sntp_status != last_sntp_status)
+        {
+            DBG_PRINTF("[NTP] SNTP status changed: %s (%d)\n",
+                       sntpStatusToString(current_sntp_status),
+                       (int)current_sntp_status);
+            last_sntp_status = current_sntp_status;
+        }
+
+        if (current_sntp_status == SNTP_SYNC_STATUS_COMPLETED && getLocalTime(&timeinfo, 1000))
         {
             time_obtained = true;
             break;
@@ -193,6 +221,7 @@ boolean ntp_sync_attempt()
     
     if (time_obtained)
     {
+        DBG_PRINTF("[NTP] NTP wait completed in %lu ms\n", (unsigned long)(millis() - ntp_start));
         DBG_PRINTLN("[NTP] NTP sync successful");
         printUTCTime();
         printLocalTime();
@@ -255,10 +284,21 @@ bool ntp_sync_only()
     uint32_t ntp_start = millis();
     struct tm timeinfo;
     bool time_obtained = false;
+    DBG_PRINTLN("[NTP] Waiting up to 10 seconds for NTP time to become available");
+    sntp_sync_status_t last_sntp_status = SNTP_SYNC_STATUS_RESET;
 
     while ((millis() - ntp_start) < 10000)
     {
-        if (getLocalTime(&timeinfo, 1000))
+        sntp_sync_status_t current_sntp_status = sntp_get_sync_status();
+        if (current_sntp_status != last_sntp_status)
+        {
+            DBG_PRINTF("[NTP] SNTP status changed: %s (%d)\n",
+                       sntpStatusToString(current_sntp_status),
+                       (int)current_sntp_status);
+            last_sntp_status = current_sntp_status;
+        }
+
+        if (current_sntp_status == SNTP_SYNC_STATUS_COMPLETED && getLocalTime(&timeinfo, 1000))
         {
             time_obtained = true;
             break;
@@ -268,6 +308,7 @@ bool ntp_sync_only()
 
     if (time_obtained)
     {
+        DBG_PRINTF("[NTP] NTP wait completed in %lu ms\n", (unsigned long)(millis() - ntp_start));
         DBG_PRINTLN("[NTP] ntp_sync_only: success");
         printUTCTime();
         printLocalTime();
@@ -353,7 +394,7 @@ tm getLocalTimestampTime(time_t timestamp)
 
 void printLocalTime()
 {
-#if SERIAL_DEBUG
+#if SERIAL_DEBUG_ENABLE
     // Return current local time in tm structure format
     // Set timezone - must be called here - env variable does not persist
     setenv("TZ", TIMEZONE_RULE, 1);
@@ -371,7 +412,7 @@ void printLocalTime()
 
 void printLocalTimestampTime(const char *TimeStampName, time_t timestamp)
 {
-#if SERIAL_DEBUG
+#if SERIAL_DEBUG_ENABLE
     setenv("TZ", TIMEZONE_RULE, 1);
     tzset();
 
@@ -389,7 +430,7 @@ void printLocalTimestampTime(const char *TimeStampName, time_t timestamp)
 
 void printUTCTime()
 {
-#if SERIAL_DEBUG
+#if SERIAL_DEBUG_ENABLE
     // Return current UTC time in tm structure format
     time_t now_utc = 0; // raw UTC epoch time
     struct tm utcTime;  // struct tm filled with pure UTC
