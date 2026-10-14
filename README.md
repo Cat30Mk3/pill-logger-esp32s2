@@ -92,7 +92,7 @@ When `SERIAL_DEBUG_ENABLE` is set to 1, startup logs show:
 <img width="480" height="640" alt="image3" src=images/IMG_1103.jpeg>
 <img width="480" height="640” alt=“image4” sec=images/IMG_1104.jpeg>
 <img width="480" height="640" alt="image5" src=images/IMG_1105.jpeg>
-<img width="480" height="640" alt="image6" src="https://github.com/user-attachments/assets/a1962dff-b46f-463d-80a5-ebc806b89117" />
-<img width="480" height="640" alt="image7" src="https://github.com/user-attachments/assets/341939b7-b1cd-4499-86ed-4cca027a090d" />
-<img width="480" height="640" alt="image8" src="https://github.com/user-attachments/assets/91ef445e-3168-40b5-b8c8-9c6bbc2b895b" />
-<img width="480" height="640" alt="image9" src="https://github.com/user-attachments/assets/2f580317-bb8a-41c6-8da7-17133de30dfd" />
+<img width="480" height="640" alt="image6" src=images/IMG_1106.jpeg>
+<img width="480" height="640" alt="image7" src=images/IMG_1107.jpeg>
+<img width="480" height="640" alt="image8" src=images/IMG_1108.jpeg>
+<img width="480" height="640" alt="image9" src=images/IMG_1109.jpeg>
